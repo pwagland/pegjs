@@ -1,10 +1,9 @@
-/* jshint jasmine:true */
-/* global PEG */
+/* global peg */
 
 "use strict";
 
 describe("compiler pass |reportInfiniteLoops|", function() {
-  var pass = PEG.compiler.passes.check.reportInfiniteLoops;
+  var pass = peg.compiler.passes.check.reportInfiniteLoops;
 
   it("reports infinite loops for zero_or_more", function() {
     expect(pass).toReportError('start = ("")*', {
@@ -69,6 +68,9 @@ describe("compiler pass |reportInfiniteLoops|", function() {
 
     expect(pass).toReportError('start = (""+)*');
     expect(pass).not.toReportError('start = ("a"+)*');
+
+    expect(pass).toReportError('start = ("")*');
+    expect(pass).not.toReportError('start = ("a")*');
 
     expect(pass).toReportError('start = (&{ })*');
 

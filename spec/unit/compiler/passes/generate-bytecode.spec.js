@@ -1,10 +1,9 @@
-/* jshint jasmine:true */
-/* global PEG */
+/* global peg */
 
 "use strict";
 
 describe("compiler pass |generateBytecode|", function() {
-  var pass = PEG.compiler.passes.generate.generateBytecode;
+  var pass = peg.compiler.passes.generate.generateBytecode;
 
   function bytecodeDetails(bytecode) {
     return {
@@ -354,6 +353,14 @@ describe("compiler pass |generateBytecode|", function() {
       expect(pass).toChangeAST(grammar, constsDetails([
         '"a"',
         '{ type: "literal", value: "a", description: "\\"a\\"" }'
+      ]));
+    });
+  });
+
+  describe("for group", function() {
+    it("generates correct bytecode", function() {
+      expect(pass).toChangeAST('start = ("a")', bytecodeDetails([
+        18, 0, 2, 2, 22, 0, 23, 1   // <expression>
       ]));
     });
   });

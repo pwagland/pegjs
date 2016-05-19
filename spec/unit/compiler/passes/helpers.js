@@ -1,11 +1,12 @@
-/* jshint jasmine:true */
-/* global PEG */
+/* global peg */
 
 "use strict";
 
 beforeEach(function() {
   this.addMatchers({
-    toChangeAST: function(grammar) {
+    toChangeAST: function(grammar, details, options) {
+      options = options !== undefined ? options : {};
+
       function matchDetails(value, details) {
         function isArray(value) {
           return Object.prototype.toString.apply(value) === "[object Array]";
@@ -43,9 +44,7 @@ beforeEach(function() {
         }
       }
 
-      var options = arguments.length > 2 ? arguments[1] : {},
-          details = arguments[arguments.length - 1],
-          ast     = PEG.parser.parse(grammar);
+      var ast = peg.parser.parse(grammar);
 
       this.actual(ast, options);
 
@@ -62,7 +61,7 @@ beforeEach(function() {
     },
 
     toReportError: function(grammar, details) {
-      var ast = PEG.parser.parse(grammar);
+      var ast = peg.parser.parse(grammar);
 
       try {
         this.actual(ast);

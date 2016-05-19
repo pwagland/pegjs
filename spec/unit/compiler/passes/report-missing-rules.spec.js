@@ -1,10 +1,9 @@
-/* jshint jasmine:true */
-/* global PEG */
+/* global peg */
 
 "use strict";
 
 describe("compiler pass |reportMissingRules|", function() {
-  var pass = PEG.compiler.passes.check.reportMissingRules;
+  var pass = peg.compiler.passes.check.reportMissingRules;
 
   it("reports missing rules", function() {
     expect(pass).toReportError('start = missing', {

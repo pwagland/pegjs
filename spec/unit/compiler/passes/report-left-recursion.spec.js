@@ -1,10 +1,9 @@
-/* jshint jasmine:true */
-/* global PEG */
+/* global peg */
 
 "use strict";
 
 describe("compiler pass |reportLeftRecursion|", function() {
-  var pass = PEG.compiler.passes.check.reportLeftRecursion;
+  var pass = peg.compiler.passes.check.reportLeftRecursion;
 
   it("reports direct left recursion", function() {
     expect(pass).toReportError('start = start', {
@@ -88,6 +87,9 @@ describe("compiler pass |reportLeftRecursion|", function() {
 
       expect(pass).toReportError('start = ""+ start');
       expect(pass).not.toReportError('start = "a"+ start');
+
+      expect(pass).toReportError('start = ("") start');
+      expect(pass).not.toReportError('start = ("a") start');
 
       expect(pass).toReportError('start = &{ } start');
 

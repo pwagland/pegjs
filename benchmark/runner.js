@@ -1,12 +1,14 @@
+/* global module, setTimeout */
+
 "use strict";
 
 (function(root, factory) {
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = factory;
   } else {
-    root.Runner = factory(root.PEG);
+    root.Runner = factory(root.peg);
   }
-}(this, function(PEG) {
+}(this, function(peg) {
 
   return {
     run: function(benchmarks, runCount, options, callbacks) {
@@ -61,7 +63,7 @@
         return function() {
           callbacks.benchmarkStart(benchmarks[i]);
 
-          state.parser = PEG.buildParser(
+          state.parser = peg.generate(
             callbacks.readFile("../examples/" + benchmarks[i].id + ".pegjs"),
             options
           );

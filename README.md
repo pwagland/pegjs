@@ -1,3 +1,8 @@
+[![Build status](https://img.shields.io/travis/pegjs/pegjs.svg)](https://travis-ci.org/pegjs/pegjs)
+[![npm version](https://img.shields.io/npm/v/pegjs.svg)](https://www.npmjs.com/package/pegjs)
+[![Bower version](https://img.shields.io/bower/v/pegjs.svg)](https://github.com/pegjs/bower)
+[![License](https://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
+
 PEG.js
 ======
 
@@ -32,11 +37,15 @@ Installation
 
 To use the `pegjs` command, install PEG.js globally:
 
-    $ npm install -g pegjs
+```console
+$ npm install -g pegjs
+```
 
 To use the JavaScript API, install PEG.js locally:
 
-    $ npm install pegjs
+```console
+$ npm install pegjs
+```
 
 If you need both the `pegjs` command and the JavaScript API, install PEG.js both
 ways.
@@ -46,7 +55,9 @@ ways.
 [Download](http://pegjs.org/#download) the PEG.js library (regular or minified
 version) or install it using Bower:
 
-    $ bower install pegjs
+```console
+$ bower install pegjs
+```
 
 Generating a Parser
 -------------------
@@ -59,19 +70,23 @@ input). Generated parser itself is a JavaScript object with a simple API.
 
 To generate a parser from your grammar, use the `pegjs` command:
 
-    $ pegjs arithmetics.pegjs
+```console
+$ pegjs arithmetics.pegjs
+```
 
 This writes parser source code into a file with the same name as the grammar
 file but with “.js” extension. You can also specify the output file explicitly:
 
-    $ pegjs arithmetics.pegjs arithmetics-parser.js
+```console
+$ pegjs arithmetics.pegjs arithmetics-parser.js
+```
 
 If you omit both input and output file, standard input and output are used.
 
-By default, the parser object is assigned to `module.exports`, which makes the
-output a Node.js module. You can assign it to another variable by passing a
-variable name using the `-e`/`--export-var` option. This may be helpful if you
-want to use the parser in browser environment.
+The generated parser is in the [UMD](https://github.com/umdjs/umd) format, which
+means it works as a Node.js or AMD module. You can also use the
+`-e`/`--export-var` option to define a global variable into which the parser
+object is assigned to when no module loader is detected.
 
 You can tweak the generated parser with several options:
 
@@ -82,24 +97,29 @@ You can tweak the generated parser with several options:
   * `--plugin` — makes PEG.js use a specified plugin (can be specified multiple
     times)
   * `--extra-options` — additional options (in JSON format) to pass to
-    `PEG.buildParser`
+    `peg.generate`
   * `--extra-options-file` — file with additional options (in JSON format) to
-    pass to `PEG.buildParser`
+    pass to `peg.generate`
   * `--trace` — makes the parser trace its progress
 
 ### JavaScript API
 
 In Node.js, require the PEG.js parser generator module:
 
-    var PEG = require("pegjs");
+```javascript
+var peg = require("pegjs");
+```
 
 In browser, include the PEG.js library in your web page or application using the
-`<script>` tag. The API will be available in the `PEG` global object.
+`<script>` tag. If PEG.js detects an AMD loader, it will define itself as a
+module, otherwise the API will be available in the `peg` global object.
 
-To generate a parser, call the `PEG.buildParser` method and pass your grammar as
-a parameter:
+To generate a parser, call the `peg.generate` method and pass your grammar as a
+parameter:
 
-    var parser = PEG.buildParser("start = ('a' / 'b')+");
+```javascript
+var parser = peg.generate("start = ('a' / 'b')+");
+```
 
 The method will return generated parser object or its source code as a string
 (depending on the value of the `output` option — see below). It will throw an
@@ -107,13 +127,21 @@ exception if the grammar is invalid. The exception will contain `message`
 property with more details about the error.
 
 You can tweak the generated parser by passing a second parameter with an options
-object to `PEG.buildParser`. The following options are supported:
+object to `peg.generate`. The following options are supported:
 
   * `cache` — if `true`, makes the parser cache results, avoiding exponential
     parsing time in pathological cases but making the parser slower (default:
     `false`)
   * `allowedStartRules` — rules the parser will be allowed to start parsing from
     (default: the first rule in the grammar)
+  * `dependencies` — parser dependencies, the value is an object which maps
+    variables used to access the dependencies in the parser to module IDs used
+    to load them; valid only when `format` is set to `"umd"` (default: `{}`)
+  * `exportVar` — name of a global variable into which the parser object is
+    assigned to when no module loader is detected; valid only when `format` is
+    set to `"umd"` (default: `null`)
+  * `format` — format of the genreated parser (`"bare"` or `"umd"`); valid only
+    when `output` is set to `"source"` (default: `"bare"`)
   * `output` — if set to `"parser"`, the method will return generated parser
     object; if set to `"source"`, it will return parser source code as a string
     (default: `"parser"`)
@@ -126,13 +154,15 @@ Using the Parser
 
 Using the generated parser is simple — just call its `parse` method and pass an
 input string as a parameter. The method will return a parse result (the exact
-value depends on the grammar used to build the parser) or throw an exception if
-the input is invalid. The exception will contain `location`, `expected` and
+value depends on the grammar used to generate the parser) or throw an exception
+if the input is invalid. The exception will contain `location`, `expected` and
 `message` properties with more details about the error.
 
-    parser.parse("abba"); // returns ["a", "b", "b", "a"]
+```javascript
+parser.parse("abba"); // returns ["a", "b", "b", "a"]
 
-    parser.parse("abcd"); // throws an exception
+parser.parse("abcd"); // throws an exception
+```
 
 You can tweak parser behavior by passing a second parameter with an options
 object to the `parse` method. The following options are supported:
@@ -152,23 +182,25 @@ ignores whitespace between tokens. You can also use JavaScript-style comments
 Let's look at example grammar that recognizes simple arithmetic expressions like
 `2*(3+4)`. A parser generated from this grammar computes their values.
 
-    start
-      = additive
+```pegjs
+start
+  = additive
 
-    additive
-      = left:multiplicative "+" right:additive { return left + right; }
-      / multiplicative
+additive
+  = left:multiplicative "+" right:additive { return left + right; }
+  / multiplicative
 
-    multiplicative
-      = left:primary "*" right:multiplicative { return left * right; }
-      / primary
+multiplicative
+  = left:primary "*" right:multiplicative { return left * right; }
+  / primary
 
-    primary
-      = integer
-      / "(" additive:additive ")" { return additive; }
+primary
+  = integer
+  / "(" additive:additive ")" { return additive; }
 
-    integer "integer"
-      = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+integer "integer"
+  = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+```
 
 On the top level, the grammar consists of *rules* (in our example, there are
 five of them). Each rule has a *name* (e.g. `integer`) that identifies the rule,
@@ -195,29 +227,31 @@ passed to the parser using the `options` variable. Curly braces in the
 initializer code must be balanced. Let's look at the example grammar from above
 using a simple initializer.
 
-    {
-      function makeInteger(o) {
-        return parseInt(o.join(""), 10);
-      }
-    }
+```pegjs
+{
+  function makeInteger(o) {
+    return parseInt(o.join(""), 10);
+  }
+}
 
-    start
-      = additive
+start
+  = additive
 
-    additive
-      = left:multiplicative "+" right:additive { return left + right; }
-      / multiplicative
+additive
+  = left:multiplicative "+" right:additive { return left + right; }
+  / multiplicative
 
-    multiplicative
-      = left:primary "*" right:multiplicative { return left * right; }
-      / primary
+multiplicative
+  = left:primary "*" right:multiplicative { return left * right; }
+  / primary
 
-    primary
-      = integer
-      / "(" additive:additive ")" { return additive; }
+primary
+  = integer
+  / "(" additive:additive ")" { return additive; }
 
-    integer "integer"
-      = digits:[0-9]+ { return makeInteger(digits); }
+integer "integer"
+  = digits:[0-9]+ { return makeInteger(digits); }
+```
 
 The parsing expressions of the rules are used to match the input text to the
 grammar. There are various types of expressions — matching characters or
@@ -326,10 +360,12 @@ the initializer at the beginning of the grammar.
 The code inside the predicate can also access location information using the
 `location` function. It returns an object like this:
 
-    {
-      start: { offset: 23, line: 5, column: 6 },
-      end:   { offset: 23, line: 5, column: 6 }
-    }
+```javascript
+{
+  start: { offset: 23, line: 5, column: 6 },
+  end:   { offset: 23, line: 5, column: 6 }
+}
+```
 
 The `start` and `end` properties both refer to the current parse position. The
 `offset` property contains an offset as a zero-based index and `line` and
@@ -355,10 +391,12 @@ the initializer at the beginning of the grammar.
 The code inside the predicate can also access location information using the
 `location` function. It returns an object like this:
 
-    {
-      start: { offset: 23, line: 5, column: 6 },
-      end:   { offset: 23, line: 5, column: 6 }
-    }
+```javascript
+{
+  start: { offset: 23, line: 5, column: 6 },
+  end:   { offset: 23, line: 5, column: 6 }
+}
+```
 
 The `start` and `end` properties both refer to the current parse position. The
 `offset` property contains an offset as a zero-based index and `line` and
@@ -398,13 +436,16 @@ using the `return` statement. This value is considered match result of the
 preceding expression.
 
 To indicate an error, the code inside the action can invoke the `expected`
-function, which makes the parser throw an exception. The function takes one
-parameter — a description of what was expected at the current position. This
-description will be used as part of a message of the thrown exception.
+function, which makes the parser throw an exception. The function takes two
+parameters — a description of what was expected at the current position and
+optional location information (the default is what `location` would return — see
+below). The description will be used as part of a message of the thrown
+exception.
 
 The code inside an action can also invoke the `error` function, which also makes
-the parser throw an exception. The function takes one parameter — an error
-message. This message will be used by the thrown exception.
+the parser throw an exception. The function takes two parameters — an error
+message and optional location information (the default is what `location` would
+return — see below). The message will be used by the thrown exception.
 
 The code inside the action can access all variables and functions defined in the
 initializer at the beginning of the grammar. Curly braces in the action code
@@ -417,10 +458,12 @@ using the `text` function.
 The code inside the action can also access location information using the
 `location` function. It returns an object like this:
 
-    {
-      start: { offset: 23, line: 5, column: 6 },
-      end:   { offset: 25, line: 5, column: 8 }
-    }
+```javascript
+{
+  start: { offset: 23, line: 5, column: 6 },
+  end:   { offset: 25, line: 5, column: 8 }
+}
+```
 
 The `start` property refers to the position at the beginning of the expression,
 the `end` property refers to position after the end of the expression. The

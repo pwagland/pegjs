@@ -1,5 +1,5 @@
-/* jshint node:false, browser:true, devel:true, jquery:true */
-/* global Runner */
+/* eslint-env browser, jquery */
+/* global benchmarks, Runner */
 
 $("#run").click(function() {
   "use strict";
@@ -81,7 +81,7 @@ $("#run").click(function() {
       }).responseText;
     },
 
-    testStart: function(benchmark, test) {
+    testStart: function() {
       /* Nothing to do. */
     },
 

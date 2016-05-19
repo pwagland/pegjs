@@ -1,7 +1,9 @@
+/* global require */
+
 "use strict";
 
 (function(root) {
   if (typeof module !== 'undefined') {
-    root.PEG = require("../lib/peg.js");
+    root.peg = require("../lib/peg.js");
   }
 }(this));
